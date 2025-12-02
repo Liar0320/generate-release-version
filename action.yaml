@@ -1,0 +1,64 @@
+name: 'Generate Release Version'
+description: 'Auto-generate semantic version and alpha release numbers'
+author: 'Liar0320'
+branding:
+  icon: 'package'
+  color: 'blue'
+
+outputs:
+  current_version:
+    description: 'Current version from package.json'
+    value: ${{ steps.version.outputs.current_version }}
+  test_version:
+    description: 'Generated alpha version (e.g., v1.5.13-alpha.1)'
+    value: ${{ steps.version.outputs.test_version }}
+  alpha_number:
+    description: 'Alpha release sequence number'
+    value: ${{ steps.version.outputs.alpha_number }}
+  build_number:
+    description: 'GitHub Actions workflow run number'
+    value: ${{ steps.version.outputs.build_number }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate version numbers
+      id: version
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        # 读取当前 package.json 的版本号
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+        # 自动递增 patch 版本号 (1.5.12 -> 1.5.13)
+        NEXT_VERSION=$(node -p "
+          const v = require('./package.json').version.split('.');
+          v[2] = parseInt(v[2]) + 1;
+          v.join('.');
+        ")
+
+        # 确保获取所有标签
+        git fetch --tags
+
+        # 查找当前版本已存在的 alpha 标签数量
+        EXISTING_ALPHAS=$(git tag -l "v${NEXT_VERSION}-alpha.*" | wc -l)
+
+        # 生成新的 alpha 编号（现有数量 + 1）
+        ALPHA_NUMBER=$((EXISTING_ALPHAS + 1))
+
+        # 生成测试版本号
+        TEST_VERSION="${NEXT_VERSION}-alpha.${ALPHA_NUMBER}"
+
+        # 保留 run_number 用于日志追踪
+        BUILD_NUMBER="${{ github.run_number }}"
+
+        echo "current_version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+        echo "test_version=${TEST_VERSION}" >> $GITHUB_OUTPUT
+        echo "build_number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
+        echo "alpha_number=${ALPHA_NUMBER}" >> $GITHUB_OUTPUT
+
+        echo "📦 当前版本: ${CURRENT_VERSION}"
+        echo "🔧 测试版本: ${TEST_VERSION}"
+        echo "📊 Alpha 编号: ${ALPHA_NUMBER}"
+        echo "🔢 Build Number: ${BUILD_NUMBER}"

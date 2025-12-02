@@ -1,0 +1,31 @@
+name: Test Generate Release Version (Marketplace)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Generate Release Version
+        id: version
+        uses: Liar0320/generate-release-version@v1.0.0
+
+      - name: Display Version Information
+        run: |
+          echo "========================================="
+          echo "📦 当前版本: ${{ steps.version.outputs.current_version }}"
+          echo "🔧 测试版本: ${{ steps.version.outputs.test_version }}"
+          echo "📊 Alpha 编号: ${{ steps.version.outputs.alpha_number }}"
+          echo "🔢 Build 编号: ${{ steps.version.outputs.build_number }}"
+          echo "========================================="
