@@ -1,0 +1,11 @@
+{
+  "name": "generate-release-version",
+  "version": "1.0.0",
+  "description": "自动生成符合语义化版本规范的 Alpha 发布版本号。用于 GitHub Actions 工作流中自动化管理版本迭代和测试版本发布。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
